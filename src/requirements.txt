@@ -1,0 +1,8 @@
+pyspark==3.5.5
+hadoop==3.3.6
+numpy
+pandas
+matplotlib
+seaborn
+nltk
+scikit-learn

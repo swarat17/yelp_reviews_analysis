@@ -1,0 +1,92 @@
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+version: "2"
+services:
+  namenode:
+    image: ubcse587/hadoop-namenode:3.4.1-1
+    hostname: namenode
+    command: ["/opt/hadoop/namenode.sh"]
+    volumes:
+      - namenode:/hadoop/dfs/name
+      - "G:/UB/DIC/Yelp JSON/yelp_dataset:/data"
+    ports:
+      - 9870:9870
+      - 8020:8020
+    env_file:
+      - ./config
+
+  datanode1:
+    image: ubcse587/hadoop-datanode:3.4.1-1
+    command: ["hdfs", "datanode"]
+    volumes:
+      - datanode1:/hadoop/dfs/data
+    env_file:
+      - ./config
+  resourcemanager:
+    image: ubcse587/hadoop:3.4.1-1
+    hostname: resourcemanager
+    command: ["yarn", "resourcemanager"]
+    ports:
+      - 8088:8088
+    env_file:
+      - ./config
+    volumes:
+      - ./test.sh:/opt/test.sh
+  nodemanager1:
+    hostname: nodemanager1
+    image: ubcse587/hadoop:3.4.1-1
+    command: ["yarn", "nodemanager"]
+    ports:
+      - 8042:8042
+    env_file:
+      - ./config
+
+  spark-master:
+    image: bitnami/spark:latest
+    hostname: spark-master
+    user: "root"
+    ports:
+      - "8080:8080"  # Spark Master UI
+      - "7077:7077"  # Spark cluster communication
+    environment:
+      - SPARK_MODE=master
+      - SPARK_RPC_AUTHENTICATION_ENABLED=no
+      - SPARK_RPC_ENCRYPTION_ENABLED=no
+      - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
+      - SPARK_SSL_ENABLED=no
+      - HADOOP_USER_NAME=root
+      - SPARK_USER=root
+      - SPARK_SUBMIT_OPTIONS=--conf spark.jars.ivy=/tmp/.ivy2
+    depends_on:
+      - namenode
+      - datanode1
+      - resourcemanager
+      - nodemanager1
+
+  spark-worker-1:
+    image: bitnami/spark:latest
+    hostname: spark-worker-1
+    environment:
+      - SPARK_MODE=worker
+      - SPARK_MASTER_URL=spark://spark-master:7077
+      - SPARK_WORKER_MEMORY=1G
+    depends_on:
+      - spark-master
+
+volumes:
+  namenode:
+  datanode1:
+  datanode2:

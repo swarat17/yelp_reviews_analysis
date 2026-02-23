@@ -1,0 +1,23 @@
+# Dataset files (never commit — 8+ GB total)
+*.json
+
+# Project-internal files
+results.docx
+results.pdf
+CLAUDE.md
+
+# Spark/Hadoop output directories
+output/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+Thumbs.db
